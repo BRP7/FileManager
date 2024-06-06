@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<config>
+    <menu>
+        <ccc_filemanager module="ccc_filemanager" translate="title">
+            <title>File Manager</title>
+            <sort_order>900</sort_order>
+            <children>
+                <filemanager module="ccc_filemanager" translate="title">
+                    <title>Manage Files</title>
+                    <action>adminhtml/index</action>
+                    <sort_order>10</sort_order>
+                </filemanager>
+            </children>
+        </ccc_filemanager>
+    </menu>
+    <acl>
+        <resources>
+            <admin>
+                <children>
+                    <system>
+                        <children>
+                            <config>
+                                <children>
+                                    <filemanager translate="title" module="ccc_filemanager">
+                                        <title>File Manager Settings</title>
+                                    </filemanager>
+                                </children>
+                            </config>
+                        </children>
+                    </system>
+                </children>
+            </admin>
+        </resources>
+    </acl>
+</config>

@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<config>
+    <sections>
+        <filemanager translate="label" module="ccc_filemanager">
+            <label>File Manager Settings</label>
+            <tab>general</tab>
+            <frontend_type>text</frontend_type>
+            <sort_order>900</sort_order>
+            <show_in_default>1</show_in_default>
+            <show_in_website>1</show_in_website>
+            <show_in_store>1</show_in_store>
+            <groups>
+                <filemanager translate="label">
+                    <label>Folder Path</label>
+                    <frontend_type>text</frontend_type>
+                    <sort_order>110</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>0</show_in_store>
+                    <fields>
+                        <file_address_textarea translate="label">
+                            <label>Default Popup Text Message</label>
+                            <frontend_type>textarea</frontend_type>
+                            <sort_order>40</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </file_address_textarea>
+                    </fields>
+                </filemanager>
+            </groups>
+        </filemanager>
+    </sections>
+</config>

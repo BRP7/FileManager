@@ -5,16 +5,10 @@
             <block type="ccc_filemanager/adminhtml_filemanager" name="ccc.filemanager.block" template="ccc_filemanager/container.phtml" />
         </reference>
         <reference name="head">
-            <action method="addJs">
-                <script>filemanager/filemanager.js</script>
-            </action>
+            <!-- <action method="addJs"><script>jscustomgrid/jquery.js</script></action> -->
+            <action method="addJs"><script>filemanager/filemanager.js</script></action>
         </reference>
     </adminhtml_index_index>
-    <ccc_filemanager_adminhtml_filemanager_index>
-        <reference name="content">
-            <block type="ccc_filemanager/adminhtml_container" name="ccc_filemanager_container" />
-        </reference>
-    </ccc_filemanager_adminhtml_filemanager_index>
     <adminhtml_index_grid>
         <block type="ccc_filemanager/adminhtml_filemanager_grid" name="filemanager.grid"  />
         <reference name="head">

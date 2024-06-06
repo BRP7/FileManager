@@ -13,23 +13,23 @@ class Ccc_Filemanager_Block_Adminhtml_Filemanager_Grid extends Mage_Adminhtml_Bl
         $this->setSaveParametersInSession(true);
         $this->setUseAjax(true);
     }
+
     protected function _prepareCollection()
     {
         $path = $this->getRequest()->getParam('path');
-        var_dump($path);
-        $folderPath = Mage::getBaseDir('var') . DS . trim($this->_folderPath, '/');
-        if($path != null){
+        // var_dump($path);
+        // var_dump(Mage::getBaseDir().DS.$path);
+        $folderPath = Mage::getBaseDir() . DS . trim($this->_folderPath, '/');
+        if ($path != null) {
             $folderPath = $folderPath . $path;
-            // var_dump($folderPath); 
+            $collection = Mage::getModel('ccc_filemanager/filemanager')
+                ->addTargetDir($folderPath)
+                ->setCollectRecursively(true)
+                ->loadData();
+            $this->setCollection($collection);
         }
-        $collection = Mage::getModel('ccc_filemanager/filemanager')
-        ->addTargetDir($folderPath)
-        ->setCollectRecursively(true) 
-        ->loadData();
-        $this->setCollection($collection);
         return parent::_prepareCollection();
     }
-
 
     protected function _prepareColumns()
     {
@@ -48,7 +48,7 @@ class Ccc_Filemanager_Block_Adminhtml_Filemanager_Grid extends Mage_Adminhtml_Bl
             'folder_name',
             array(
                 'header' => Mage::helper('ccc_filemanager')->__('Folder Path'),
-                'index'=>'folder_name',
+                'index' => 'folder_name',
                 'align' => 'left',
                 'filter_condition_callback' => array($this, '_filterFolderPathCallback')
             )
@@ -74,7 +74,7 @@ class Ccc_Filemanager_Block_Adminhtml_Filemanager_Grid extends Mage_Adminhtml_Bl
                 'align' => 'left',
             )
         );
-        
+
         $this->addColumn(
             'action',
             array(
@@ -85,13 +85,15 @@ class Ccc_Filemanager_Block_Adminhtml_Filemanager_Grid extends Mage_Adminhtml_Bl
                 'actions' => array(
                     array(
                         'caption' => Mage::helper('ccc_filemanager')->__('Download'),
-                        'url' => array('base' => '*/*/download'),
-                        'field' => 'filename'
+                        'url' => array('base' => '*/*/download', 'params' => array('filename' => '$filename')),
+                        'field' => 'filename',
+                        'data-filepath' => 'filepath', // Ensure filePath is included here
                     ),
                     array(
                         'caption' => Mage::helper('ccc_filemanager')->__('Delete'),
-                        'url' => array('base' => '*/*/delete'),
-                        'field' => 'filename'
+                        'url' => array('base' => '*/*/delete', 'params' => array('filename' => '$filename')),
+                        'field' => 'filename',
+                        'data-filepath' => 'filepath', // Ensure filePath is included here
                     ),
                 ),
                 'filter' => false,
@@ -100,9 +102,9 @@ class Ccc_Filemanager_Block_Adminhtml_Filemanager_Grid extends Mage_Adminhtml_Bl
             )
         );
 
+
         return parent::_prepareColumns();
     }
-
 
     public function setFolderPath($folderPath)
     {
@@ -119,7 +121,6 @@ class Ccc_Filemanager_Block_Adminhtml_Filemanager_Grid extends Mage_Adminhtml_Bl
     {
         return $row->getData('filename');
     }
-    
 
     protected function _addColumnFilterToCollection($column)
     {
@@ -190,5 +191,4 @@ class Ccc_Filemanager_Block_Adminhtml_Filemanager_Grid extends Mage_Adminhtml_Bl
 
         return $this;
     }
-  
 }

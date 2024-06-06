@@ -42,5 +42,37 @@ class Ccc_Filemanager_Adminhtml_IndexController extends Mage_Adminhtml_Controlle
         $this->getResponse()->setBody(Mage::helper('core')->jsonEncode($response));
     }
 
+
+    public function downloadAction()
+    {
+        $filename = $this->getRequest()->getParam('filename');
+        $filePath = $this->getRequest()->getParam('filePath');
+        $fullPath = $filePath.'//'.$filename;
+    
+        if ($fullPath && file_exists($fullPath)) {
+            $this->_prepareDownloadResponse(basename($fullPath), file_get_contents($fullPath));
+        } else {
+            Mage::getSingleton('adminhtml/session')->addError('File not found');
+            $this->_redirect('*/*/');
+        }
+    }
+    
+    public function deleteAction()
+    {
+        $filename = $this->getRequest()->getParam('filename');
+        $filePath = $this->getRequest()->getParam('filePath');
+        $fullPath = $filePath.'//'.$filename;
+    
+        if ($filePath && file_exists($filePath)) {
+            unlink($fullPath);
+            Mage::getSingleton('adminhtml/session')->addSuccess('File deleted successfully');
+        } else {
+            Mage::getSingleton('adminhtml/session')->addError('File not found');
+        }
+    
+        $this->_redirect('*/*/');
+    }
+    
+
     
 }

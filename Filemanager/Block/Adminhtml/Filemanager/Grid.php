@@ -8,24 +8,36 @@ class Ccc_Filemanager_Block_Adminhtml_Filemanager_Grid extends Mage_Adminhtml_Bl
     {
         parent::__construct();
         $this->setId('filemanagerGrid');
-        $this->setDefaultSort('name');
+        $this->setDefaultSort('filename'); // Set a default sort field
         $this->setDefaultDir('ASC');
         $this->setSaveParametersInSession(true);
         $this->setUseAjax(true);
     }
 
     protected function _prepareCollection()
-    {
-        $path = $this->getRequest()->getParam('path');
-        // var_dump($path);
-        // var_dump(Mage::getBaseDir().DS.$path);
-        $folderPath = Mage::getBaseDir() . DS . trim($this->_folderPath, '/');
-        if ($path != null) {
-            $folderPath = $folderPath . $path;
+    {   
+        $path = base64_decode($this->getRequest()->getParam('path'));
+        $fullPath = Mage::getBaseDir() . DS . $path;
+        var_dump($fullPath);
+        if ($path) {
             $collection = Mage::getModel('ccc_filemanager/filemanager')
-                ->addTargetDir($folderPath)
+                ->addTargetDir($fullPath)
                 ->setCollectRecursively(true)
-                ->loadData();
+                ->setDirsFilter('')
+                ->setFilesFilter('');
+            if ($this->getRequest()->getParam('sort')) {
+                $collection->setOrder($this->getRequest()->getParam('sort'), $this
+                    ->getRequest()->getParam('dir'));
+            }
+            if ($this->getRequest()->getParam('filter')) {
+                $filters = $this->helper('adminhtml')
+                    ->prepareFilterString($this->getRequest()->getParam('filter'));
+                foreach ($filters as $_field => $value) {
+
+                    $collection->addFieldToFilter($_field, $value);
+                }
+            }
+            $collection->load();
             $this->setCollection($collection);
         }
         return parent::_prepareCollection();
@@ -37,9 +49,10 @@ class Ccc_Filemanager_Block_Adminhtml_Filemanager_Grid extends Mage_Adminhtml_Bl
             'created_date',
             array(
                 'header' => Mage::helper('ccc_filemanager')->__('Created Date'),
-                'index' => 'mtime',
+                'index' => 'created_date',
                 'type' => 'datetime',
                 'align' => 'center',
+                'filter'=>false,
                 'renderer' => 'Ccc_Filemanager_Block_Adminhtml_Filemanager_Grid_Renderer_CreatedDate'
             )
         );
@@ -48,7 +61,7 @@ class Ccc_Filemanager_Block_Adminhtml_Filemanager_Grid extends Mage_Adminhtml_Bl
             'folder_name',
             array(
                 'header' => Mage::helper('ccc_filemanager')->__('Folder Path'),
-                'index' => 'folder_name',
+                'index' => 'dirname',
                 'align' => 'left',
                 'filter_condition_callback' => array($this, '_filterFolderPathCallback')
             )
@@ -58,11 +71,10 @@ class Ccc_Filemanager_Block_Adminhtml_Filemanager_Grid extends Mage_Adminhtml_Bl
             'filename',
             array(
                 'header' => Mage::helper('ccc_filemanager')->__('Filename'),
-                'index' => 'filename',
+                'index' => 'basename',
                 'editable' => true,
                 'align' => 'left',
                 'renderer' => 'Ccc_Filemanager_Block_Adminhtml_Filemanager_Grid_Renderer_Editable',
-
             )
         );
 
@@ -75,35 +87,38 @@ class Ccc_Filemanager_Block_Adminhtml_Filemanager_Grid extends Mage_Adminhtml_Bl
             )
         );
 
-        $this->addColumn(
-            'action',
-            array(
-                'header' => Mage::helper('ccc_filemanager')->__('Action'),
-                'width' => '100',
-                'type' => 'action',
-                'getter' => 'getFilename',
-                'actions' => array(
-                    array(
-                        'caption' => Mage::helper('ccc_filemanager')->__('Download'),
-                        'url' => array('base' => '*/*/download', 'params' => array('filename' => '$filename')),
-                        'field' => 'filename',
-                        'data-filepath' => 'filepath', // Ensure filePath is included here
-                    ),
-                    array(
-                        'caption' => Mage::helper('ccc_filemanager')->__('Delete'),
-                        'url' => array('base' => '*/*/delete', 'params' => array('filename' => '$filename')),
-                        'field' => 'filename',
-                        'data-filepath' => 'filepath', // Ensure filePath is included here
-                    ),
-                ),
-                'filter' => false,
-                'sortable' => false,
-                'is_system' => true,
-            )
-        );
-
+        $this->addColumn('action', [
+            'header' => Mage::helper('ccc_filemanager')->__('Action'),
+            'width' => '100',
+            'type' => 'action',
+            'getter' => 'getFilePath',
+            'renderer' => 'Ccc_Filemanager_Block_Adminhtml_Filemanager_Grid_Renderer_Action',
+            'filter' => false,
+            'sortable' => false,
+            'is_system' => true,
+        ]);
 
         return parent::_prepareColumns();
+    }
+
+    protected function _addColumnFilterToCollection($column)
+    {
+        if ($this->getCollection() instanceof Varien_Data_Collection) {
+            if ($column->getFilterConditionCallback()) {
+                call_user_func($column->getFilterConditionCallback(), $this->getCollection(), $column);
+            } else {
+                $field = ($column->getFilterIndex()) ? $column->getFilterIndex() : $column->getIndex();
+                $value = $column->getFilter()->getValue();
+
+                if ($field && $value !== null) {
+                    $this->getCollection()->addFilter($field, $value);
+                }
+            }
+        } else {
+            parent::_addColumnFilterToCollection($column);
+        }
+
+        return $this;
     }
 
     public function setFolderPath($folderPath)
@@ -120,75 +135,5 @@ class Ccc_Filemanager_Block_Adminhtml_Filemanager_Grid extends Mage_Adminhtml_Bl
     public function getFilename($row)
     {
         return $row->getData('filename');
-    }
-
-    protected function _addColumnFilterToCollection($column)
-    {
-        if (!$this->getCollection()) {
-            return $this;
-        }
-
-        $filter = $column->getFilter()->getValue();
-        if (!$filter) {
-            return $this;
-        }
-
-        $collection = $this->getCollection();
-        $columnName = $column->getId();
-
-        if ($columnName === 'created_date') {
-            $fromDate = isset($filter['from']) ? strtotime($filter['from']) : null;
-            $toDate = isset($filter['to']) ? strtotime($filter['to']) : null;
-
-            $filteredItems = [];
-            foreach ($collection as $item) {
-                $createdDate = strtotime($item->getCreatedDate());
-
-                if (($fromDate === null || $createdDate >= $fromDate) && ($toDate === null || $createdDate <= $toDate)) {
-                    $filteredItems[] = $item;
-                }
-            }
-
-            $filteredCollection = new Varien_Data_Collection();
-            foreach ($filteredItems as $item) {
-                $filteredCollection->addItem($item);
-            }
-
-            $this->setCollection($filteredCollection);
-        } else {
-            $filteredItems = [];
-            foreach ($collection as $item) {
-                $addItem = false;
-                switch ($columnName) {
-                    case 'file_name':
-                        if (stripos($item->getFileName(), $filter) !== false) {
-                            $addItem = true;
-                        }
-                        break;
-                    case 'folder_path':
-                        if (stripos($item->getFolderPath(), $filter) !== false) {
-                            $addItem = true;
-                        }
-                        break;
-                    case 'file_extension':
-                        if (stripos($item->getFileExtension(), $filter) !== false) {
-                            $addItem = true;
-                        }
-                        break;
-                }
-                if ($addItem) {
-                    $filteredItems[] = $item;
-                }
-            }
-
-            $filteredCollection = new Varien_Data_Collection();
-            foreach ($filteredItems as $item) {
-                $filteredCollection->addItem($item);
-            }
-
-            $this->setCollection($filteredCollection);
-        }
-
-        return $this;
     }
 }

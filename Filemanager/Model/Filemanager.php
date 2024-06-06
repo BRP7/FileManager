@@ -5,12 +5,12 @@ class Ccc_Filemanager_Model_Filemanager extends Varien_Data_Collection_Filesyste
     protected function _generateRow($filepath)
     {
         $row = parent::_generateRow($filepath);
-        $row['filename']=basename($filepath);
-        // var_dump($row['filename']);
+        $row['basename'] = basename($filepath);
         $row['folder_name'] = dirname($filepath);
         $row['created_date'] = $this->_getFormattedDate(filectime($filepath));
         $row['extension'] = pathinfo($filepath, PATHINFO_EXTENSION);
-        // var_dump($row['folder_name']);
+        $basePath = Mage::getBaseDir().DS;
+        $row['dirname'] = str_replace($basePath, "", $row['folder_name']);
         return $row;
     }
 
@@ -19,7 +19,7 @@ class Ccc_Filemanager_Model_Filemanager extends Varien_Data_Collection_Filesyste
         return date('Y-m-d H:i:s', $timestamp);
     }
 
-    public function renameFile($filePath, $oldFilename, $newFilename)
+    public function renameCustomFile($filePath, $oldFilename, $newFilename)
     {
         $oldFilePath = $filePath . DS . $oldFilename;
         $newFilePath = $filePath . DS . $newFilename;
@@ -34,4 +34,6 @@ class Ccc_Filemanager_Model_Filemanager extends Varien_Data_Collection_Filesyste
             throw new Exception('Old file does not exist.');
         }
     }
+
+   
 }

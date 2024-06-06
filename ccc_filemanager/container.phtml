@@ -1,0 +1,36 @@
+<h1>File Manager</h1>
+
+<select id="folder_select" name="folder_path">
+    <option value="">--select--</option>
+    <?php
+    $configPaths = Mage::getStoreConfig('filemanager/filemanager/file_address_textarea');
+    // var_dump($configPaths);
+    if ($configPaths) {
+        $paths = explode("\n", $configPaths);
+        foreach ($paths as $path) {
+            echo '<option value="' . trim($path) . '">' . trim($path) . '</option>';
+        }
+    } else {
+        echo '<option value="">No paths configured</option>';
+    }
+    ?>
+</select>
+
+<script type="text/javascript">
+    var form_key=FORM_KEY;
+    document.getElementById('folder_select').addEventListener('change', function() {
+        new Ajax.Request('<?php echo $this->getUrl('*/*/grid') ?>', {
+            method: 'post',
+            parameters: { path: this.value , fromKey:form_key},
+            onSuccess: function(transport) {
+                console.log(transport.responseText);
+                var response = document.getElementById('filemanager_grid').innerHTML = transport.responseText;
+                initializeGrid();
+            }
+        });
+    });
+</script>
+
+<div id="filemanager_grid">
+    <?php echo $this->getGridHtml() ?>
+</div>

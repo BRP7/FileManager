@@ -19,12 +19,13 @@
 <script type="text/javascript">
     var form_key=FORM_KEY;
     document.getElementById('folder_select').addEventListener('change', function() {
+        // console.log(($F('folder_select')));
         new Ajax.Request('<?php echo $this->getUrl('*/*/grid') ?>', {
             method: 'post',
-            parameters: { path: this.value , fromKey:form_key},
+            parameters: { path:  btoa($F('folder_select')) , fromKey:form_key},
             onSuccess: function(transport) {
-                console.log(transport.responseText);
-                var response = document.getElementById('filemanager_grid').innerHTML = transport.responseText;
+                // console.log(transport.responseText);
+               document.getElementById('filemanager_grid').update(transport.responseText);
                 initializeGrid();
             }
         });

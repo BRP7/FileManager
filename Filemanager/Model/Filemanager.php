@@ -35,5 +35,15 @@ class Ccc_Filemanager_Model_Filemanager extends Varien_Data_Collection_Filesyste
         }
     }
 
+    public function filterCallbackLike($field, $filterValue, $row)
+    {
+        $filterValue = trim($filterValue instanceof Zend_Db_Expr
+            ? (string) $filterValue
+            : $filterValue, "'");
+
+        $filterValueRegex = str_replace('%', '(.*?)', preg_quote($filterValue, '/'));
+        return (bool) preg_match("/^{$filterValueRegex}$/i", $row[$field]);
+    }
+
    
 }

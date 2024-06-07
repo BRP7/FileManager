@@ -15,33 +15,25 @@ class Ccc_Filemanager_Block_Adminhtml_Filemanager_Grid extends Mage_Adminhtml_Bl
     }
 
     protected function _prepareCollection()
-    {   
+    {
         $path = base64_decode($this->getRequest()->getParam('path'));
         $fullPath = Mage::getBaseDir() . DS . $path;
-        var_dump($fullPath);
+        Mage::log('Full path: ' . $fullPath, null, 'collection.log');
+    
         if ($path) {
             $collection = Mage::getModel('ccc_filemanager/filemanager')
                 ->addTargetDir($fullPath)
                 ->setCollectRecursively(true)
                 ->setDirsFilter('')
                 ->setFilesFilter('');
-            if ($this->getRequest()->getParam('sort')) {
-                $collection->setOrder($this->getRequest()->getParam('sort'), $this
-                    ->getRequest()->getParam('dir'));
-            }
-            if ($this->getRequest()->getParam('filter')) {
-                $filters = $this->helper('adminhtml')
-                    ->prepareFilterString($this->getRequest()->getParam('filter'));
-                foreach ($filters as $_field => $value) {
-
-                    $collection->addFieldToFilter($_field, $value);
-                }
-            }
-            $collection->load();
+            Mage::log('Collection set in _prepareCollection', null, 'collection.log');
             $this->setCollection($collection);
         }
         return parent::_prepareCollection();
     }
+    
+
+   
 
     protected function _prepareColumns()
     {
@@ -101,26 +93,7 @@ class Ccc_Filemanager_Block_Adminhtml_Filemanager_Grid extends Mage_Adminhtml_Bl
         return parent::_prepareColumns();
     }
 
-    protected function _addColumnFilterToCollection($column)
-    {
-        if ($this->getCollection() instanceof Varien_Data_Collection) {
-            if ($column->getFilterConditionCallback()) {
-                call_user_func($column->getFilterConditionCallback(), $this->getCollection(), $column);
-            } else {
-                $field = ($column->getFilterIndex()) ? $column->getFilterIndex() : $column->getIndex();
-                $value = $column->getFilter()->getValue();
-
-                if ($field && $value !== null) {
-                    $this->getCollection()->addFilter($field, $value);
-                }
-            }
-        } else {
-            parent::_addColumnFilterToCollection($column);
-        }
-
-        return $this;
-    }
-
+   
     public function setFolderPath($folderPath)
     {
         $this->_folderPath = $folderPath;

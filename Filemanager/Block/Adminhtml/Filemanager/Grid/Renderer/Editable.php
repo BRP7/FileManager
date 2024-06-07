@@ -4,10 +4,10 @@ class Ccc_Filemanager_Block_Adminhtml_Filemanager_Grid_Renderer_Editable extends
     
         public function render(Varien_Object $row)
         {
-           $fullPath =  Mage::getBaseDir().$row->getFolderName();
+    
             $value = $row->getData($this->getColumn()->getIndex());
-            $url = $this->getUrl('*/*/rename');
-            $html = '<div class="editableDiv" data-filepath="' . $fullPath . '"  data-url="' . $url . '"data-value="' . $value . '" data-id="' . $row->getId() . '">' . $value . '</div>';
+            $url = $this->getUrl('*/*/renameFile');
+            $html = '<div class="editableDiv" data-filepath="' . $row->getFolderName(). '"  data-url="' . $url . '"data-value="' . $value . '" data-id="' . $row->getId() . '">' . $value . '</div>';
             return $html;
         }
     }

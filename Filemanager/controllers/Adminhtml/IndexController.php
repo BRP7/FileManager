@@ -20,19 +20,22 @@ class Ccc_Filemanager_Adminhtml_IndexController extends Mage_Adminhtml_Controlle
         $this->getResponse()->setBody($html);
     }
 
-    public function renameAction()
+    public function renameFileAction()
     {
+        $oldFilename = $this->getRequest()->getParam('oldFilename');
+        Mage::log($this->getRequest()->isPost(), null, 'custom_post.log');
         $response = array('status' => 'error', 'message' => 'Invalid request');
-
+    
         if ($this->getRequest()->isPost()) {
-            $oldFilename = $this->getRequest()->getParam('oldFilename');
             $newFilename = $this->getRequest()->getParam('newFilename');
             $filePath = $this->getRequest()->getParam('filePath');
-
+    
+            Mage::log("Old Filename: $oldFilename, New Filename: $newFilename, File Path: $filePath", null, 'custom.log');
+    
             try {
                 $fileManagerModel = Mage::getModel('ccc_filemanager/filemanager');
                 $result = $fileManagerModel->renameCustomFile($filePath, $oldFilename, $newFilename);
-
+    
                 if ($result) {
                     $response = array('status' => 'success', 'message' => 'File renamed successfully');
                 } else {
@@ -42,9 +45,9 @@ class Ccc_Filemanager_Adminhtml_IndexController extends Mage_Adminhtml_Controlle
                 $response['message'] = $e->getMessage();
             }
         }
-
         $this->getResponse()->setBody(Mage::helper('core')->jsonEncode($response));
     }
+    
 
 
     public function deleteAction()
